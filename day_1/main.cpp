@@ -7,7 +7,6 @@ int main(int argc,  char** argv) {
     assert(argc == 2);
     std::ifstream file;
     file.open(argv[1], std::ios_base::in);
-    std::string line;
 
     std::multiset<int> left_multiset, right_multiset;
     int left, right;
@@ -16,11 +15,16 @@ int main(int argc,  char** argv) {
         right_multiset.insert(right);
     }
 
-    int result = 0;
-    auto left_it = left_multiset.begin();
+    int distance = 0;
     auto right_it = right_multiset.begin();
-    for (; left_it != left_multiset.end(); left_it++, right_it++) {
-        result += std::abs(*left_it - *right_it);
+    for (auto left_it = left_multiset.begin(); left_it != left_multiset.end(); left_it++, right_it++) {
+        distance += std::abs(*left_it - *right_it);
     }
-    std::cout << result << std::endl;
+    std::cout << "Distance: " << distance << std::endl;
+
+    int similarity = 0;
+    for (auto it = left_multiset.begin(); it != left_multiset.end(); it++) {
+        similarity += *it * right_multiset.count(*it);
+    }
+    std::cout << "Similarity: " << similarity << std::endl;
 }
