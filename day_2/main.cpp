@@ -1,22 +1,45 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <set>
+#include <vector>
+#include <queue>
 #include <cassert>
 
-bool isSafe(std::string &line) {
-    std::istringstream line_stream(line);
+bool isSafe(std::queue<int> &line) {
     int next, prev;
-    if (!(line_stream >> prev >> next)) return true;
+    prev = line.front(); line.pop();
+    next = line.front(); line.pop();
 
     bool increasing = next > prev;
-    do {
+    while (true) {
         if (increasing && !(next > prev && next <= prev + 3)) return false;
         if (!increasing && !(next < prev && next >= prev - 3)) return false;
+        if (line.empty()) break;
         prev = next;
-    } while (line_stream >> next);
+        next = line.front(); line.pop();
+    }
 
     return true; 
+}
+
+// I hate this so much
+// TODO: Find linear solution that handles all edge cases...
+bool isDampenerSafe(std::string &line) {
+    std::istringstream line_stream(line);
+    std::vector<int> values;
+    int val;
+    while (line_stream >> val) values.push_back(val);
+
+    for (size_t i = 0; i < values.size(); i++) {
+        std::queue<int> substring;
+        for (size_t j = 0; j < values.size(); j++) {
+            if (i == j) continue;
+            substring.push(values[j]);
+        }
+        if (isSafe(substring)) return true;
+    }
+
+    return false;
 }
 
 int main(int argc,  char** argv) {
@@ -27,7 +50,7 @@ int main(int argc,  char** argv) {
     int count = 0;
     std::string line;
     while (std::getline(file, line)) {
-        count += isSafe(line);
+        count += isDampenerSafe(line);
     }
 
     std::cout << count << std::endl;
