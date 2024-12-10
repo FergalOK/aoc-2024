@@ -6,13 +6,15 @@
 #include <unordered_set>
 #include <stack>
 
+int calculate(std::vector<std::pair<int,int>> start_nodes, std::vector<std::vector<char>> map, bool part1 = false);
+
 int main(int argc,  char** argv) {
     assert(argc == 2);
     std::ifstream file;
     file.open(argv[1], std::ios_base::in);
 
     std::vector<std::vector<char>> map;
-    std::stack<std::pair<int,int>> start_nodes;
+    std::vector<std::pair<int,int>> start_nodes;
     std::string line;
     int y = 0;
     int width, height;
@@ -23,7 +25,7 @@ int main(int argc,  char** argv) {
         int x = 0;
         std::vector<char> row;
         while (ss >> c) {
-            if (c == '0') start_nodes.push({x, y});
+            if (c == '0') start_nodes.push_back({x, y});
             row.push_back(c - '0');
             x++;
         }
@@ -32,11 +34,18 @@ int main(int argc,  char** argv) {
     }
     height = y;
 
+    std::cout << "Result (part 1): " << calculate(start_nodes, map, true) << std::endl;
+    std::cout << "Result (part 2): " << calculate(start_nodes, map, false) << std::endl;
+}
+
+int calculate(std::vector<std::pair<int,int>> start_nodes, std::vector<std::vector<char>> map, bool part1) {
+    int height = map.size();
+    int width = map[0].size();
     int result = 0;
     auto hash = [width](int x, int y) { return x + width * y; };
-    while (!start_nodes.empty()) {
+    for (auto start : start_nodes) {
         std::stack<std::pair<int,int>> nodes;
-        nodes.push(start_nodes.top()); start_nodes.pop();
+        nodes.push(start);
 
         std::unordered_set<int> seen;
         while (!nodes.empty()) {
@@ -53,7 +62,7 @@ int main(int argc,  char** argv) {
                 int dy = !(i & 1) * dir;
                 if (x + dx < 0 || x + dx >= width || y + dy < 0 || y + dy >= height) continue;
                 if (map[y + dy][x + dx] == map[y][x] + 1) {
-                    if (seen.find(hash(x + dx, y + dy)) != seen.end()) continue;
+                    if (part1 && seen.find(hash(x + dx, y + dy)) != seen.end()) continue;
                     nodes.push({x + dx, y + dy});
                     seen.insert(hash(x + dx, y + dy));
                 }
@@ -61,5 +70,5 @@ int main(int argc,  char** argv) {
         }
     }
 
-    std::cout << "Result " << result << std::endl;
+    return result;
 }
