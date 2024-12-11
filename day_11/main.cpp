@@ -1,42 +1,50 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <vector>
 #include <cassert>
-#include <unordered_set>
-#include <stack>
+#include <unordered_map>
 
-int calculate(std::vector<std::pair<int,int>> start_nodes, std::vector<std::vector<char>> map, bool part1 = false);
+std::unordered_map<long, long> seen;
+auto hash = [](long start, int iterations) { return iterations + 75 * start; };
+
+long count(long start, int iterations) {
+    if (iterations == 0) return 1;
+    if (seen.find(hash(start, iterations)) != seen.end()){
+        return seen[hash(start, iterations)];
+    }
+    
+    long result;
+    if (start == 0) {
+        result = count(1, iterations - 1);
+    }
+    else {
+        std::string s = std::to_string(start);
+        if (s.size() % 2 == 0) {
+            long left = stol(s.substr(0, s.size() / 2));
+            long right = stol(s.substr(s.size() / 2));
+            result = count(left, iterations - 1) + count(right, iterations - 1);
+        }
+        else {
+            result = count(2024 * start, iterations - 1);
+        }
+    }
+
+    seen.insert({hash(start, iterations), result});
+    return result;
+}
 
 int main(int argc,  char** argv) {
     assert(argc == 2);
     std::ifstream file;
     file.open(argv[1], std::ios_base::in);
 
-    std::vector<long> values;
     int v;
-    while (file >> v) values.push_back(v);
-
-    for (int j = 0; j < 25; j++) {
-        size_t size = values.size();
-        for (int i = 0; i < size; i++) {
-            if (values[i] == 0) {
-                values[i] = 1;
-                continue;
-            }
-
-            std::string s = std::to_string(values[i]);
-            if (s.size() % 2 == 0) {
-                values[i] = stol(s.substr(0, s.size() / 2));
-                values.push_back(stol(s.substr(s.size() / 2)));
-                continue;
-            }
-
-            values[i] = 2024 * values[i];
-        }
-
-        std::cout << "After " << j << " iteration: " << size << std::endl;
+    long result_part1 = 0;
+    long result_part2 = 0;
+    while (file >> v) {
+        result_part1 += count(v, 25);
+        result_part2 += count(v, 75);
     }
 
-    std::cout << "Result (part 1): " << values.size() << std::endl;
+    std::cout << "Result (part 1): " << result_part1 << std::endl;
+    std::cout << "Result (part 2): " << result_part2 << std::endl;
 }
