@@ -3,8 +3,8 @@
 #include <sstream>
 #include <cassert>
 #include <unordered_set>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 std::vector<std::string> input;
 std::unordered_set<int> seen;
@@ -53,93 +53,41 @@ int main(int argc,  char** argv) {
     file.open(argv[1], std::ios_base::in);
 
     std::string line;
-    while (std::getline(file, line)) {
-        input.push_back(line);
-    }
-
+    while (std::getline(file, line)) input.push_back(line);
 
     int width = input[0].size();
     auto hash = [width](int x, int y) { return x + width * y; };
-
-    // Row direction
-    std::cout << "Rows" << std::endl;
-    char prev = input[0][0];
-    for (int j = 1; j < width; j++) {
-        if (input[0][j] != prev) {
-            int h = hash(0, j-1);
-            if (sides.find(h) == sides.end()) sides.insert({h, 0});
-            sides[h]++;
-            std::cout << "Added " << 0 << ", " << j-1 << " " << prev << std::endl;
-            prev = input[0][j];
-        }
-    }
-    sides.insert({hash(0, width-1), 1});
-    std::cout << "Added " << 0 << ", " << width-1 << " " << prev << std::endl;
-    std::cout << "BREAK"<<std::endl;
-    for (int i = 1; i < input.size(); i++) {
-        prev = input[i][0];
-        bool side = false;
-        for (int j = 1; j < width; j++) {            
-            if (input[i][j] != prev || input[i-1][j] == prev) {
-                if (side) {
-                    int h = hash(i, j-1);
+    for (int i = 0; i < input.size(); i++) {
+        for (int j = 0; j < width; j++) {
+            char val = input[i][j];
+            for (int k = 0; k < 4; k++) {
+                int dx = 2 * (k & 1) - 1;
+                int dy = (k & 2) - 1;
+                bool x_range = i+dx < 0 || i+dx >= input.size();
+                bool y_range = j+dy < 0 || j+dy >= width;
+                bool parallel = x_range || y_range || val != input[i+dx][j+dy];
+                bool x_axe = x_range || val != input[i+dx][j];
+                bool y_axe = y_range || val != input[i][j+dy];
+                if ((parallel && (x_axe == y_axe)) || (x_axe && y_axe)) {
+                    int h = hash(i, j);
                     if (sides.find(h) == sides.end()) sides.insert({h, 0});
                     sides[h]++;
-                    std::cout << "Added " << i << ", " << j-1 << " " << prev << std::endl;
                 }
-                prev = input[i][j];
-                side =false;
             }
-            if (input[i-1][j] != input[i][j]) side = true;
         }
     }
 
-    // Column direction
-    std::cout << "Cols" << std::endl;
-    prev = input[0][0];
-    for (int i = 1; i < input.size(); i++) {
-        if (input[i][0] != prev) {
-            int h = hash(i-1, 0);
-            if (sides.find(h) == sides.end()) sides.insert({h, 0});
-            sides[h]++;
-            std::cout << "Added " << i-1 << ", " << 0 << " " << prev << std::endl;
-            prev = input[i][0];
-        }
-    }
-    sides.insert({hash(input.size()-1, 0), 1});
-    std::cout << "Added " << input.size()-1 << ", " << 0 << " " << prev << std::endl;
-    std::cout << "BREAK"<<std::endl;
-    for (int j = 1; j < width; j++) {
-        prev = input[0][j];
-        bool side = false;
-        for (int i = 1; i < width; i++) {            
-            if (input[i][j] != prev || input[i][j-1] == prev) {
-                if (side) {
-                    int h = hash(i-1, j);
-                    if (sides.find(h) == sides.end()) sides.insert({h, 0});
-                    sides[h]++;
-                    std::cout << "Added " << i-1 << ", " << j << " " << prev << std::endl;
-                }
-                prev = input[i][j];
-                side =false;
-            }
-            if (input[i][j-1] != input[i][j]) side = true;
-        }
-    }
-
-
-
-
-
-    int result = 0;
+    int result_part1 = 0;
+    int result_part2 = 0;
     for (int i = 0; i < input.size(); i++) {
         for (int j = 0; j < width; j++) {
             if (seen.find(hash(i, j)) != seen.end()) continue;
             params val = calculate(i, j);
-            std::cout << i << ", " << j << ": " << val.sides << " " << val.area <<std::endl;
-            result += val.area * val.perim;
+            result_part1 += val.area * val.perim;
+            result_part2 += val.area * val.sides;
         }
     }
 
-    // std::cout << "Result (part 1): " << result << std::endl;
+    std::cout << "Result (part 1): " << result_part1 << std::endl;
+    std::cout << "Result (part 2): " << result_part2 << std::endl;
 }
