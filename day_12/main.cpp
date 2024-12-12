@@ -4,23 +4,28 @@
 #include <cassert>
 #include <unordered_set>
 #include <vector>
+#include <unordered_map>
 
 std::vector<std::string> input;
 std::unordered_set<int> seen;
-int hash(int x, int y);
+std::unordered_map<int, int> sides;
 
 struct params {
     int perim;
     int area;
+    int sides;
 };
 
 params calculate(int x, int y) {
+    params result {};
     int width = input[0].size();
     auto hash = [width](int x, int y) { return x + width * y; };
+    if (sides.find(hash(x, y)) != sides.end()) result.sides = sides[hash(x, y)];
+
     if (seen.find(hash(x, y)) != seen.end()) return {};
     else seen.insert(hash(x, y));
 
-    params result {0, 1};
+    result.area = 1;
     for (int i = 0; i < 4; i++) {
         int dx = (i & 1) * ((i & 2) - 1);
         int dy = !(i & 1) * ((i & 2) - 1);
@@ -35,12 +40,12 @@ params calculate(int x, int y) {
         params sub_result = calculate(x + dx, y + dy);
         result.perim += sub_result.perim;
         result.area += sub_result.area;
+        result.sides += sub_result.sides;
     }
 
     return result;
 }
 
-#include <unordered_map>
 
 int main(int argc,  char** argv) {
     assert(argc == 2);
@@ -55,7 +60,9 @@ int main(int argc,  char** argv) {
 
     int width = input[0].size();
     auto hash = [width](int x, int y) { return x + width * y; };
-    std::unordered_map<int, int> sides;
+
+    // Row direction
+    std::cout << "Rows" << std::endl;
     char prev = input[0][0];
     for (int j = 1; j < width; j++) {
         if (input[0][j] != prev) {
@@ -87,13 +94,52 @@ int main(int argc,  char** argv) {
         }
     }
 
-    // int result = 0;
-    // for (int i = 0; i < input.size(); i++) {
-    //     for (int j = 0; j < width; j++) {
-    //         params val = calculate(i, j);
-    //         result += val.area * val.perim;
-    //     }
-    // }
+    // Column direction
+    std::cout << "Cols" << std::endl;
+    prev = input[0][0];
+    for (int i = 1; i < input.size(); i++) {
+        if (input[i][0] != prev) {
+            int h = hash(i-1, 0);
+            if (sides.find(h) == sides.end()) sides.insert({h, 0});
+            sides[h]++;
+            std::cout << "Added " << i-1 << ", " << 0 << " " << prev << std::endl;
+            prev = input[i][0];
+        }
+    }
+    sides.insert({hash(input.size()-1, 0), 1});
+    std::cout << "Added " << input.size()-1 << ", " << 0 << " " << prev << std::endl;
+    std::cout << "BREAK"<<std::endl;
+    for (int j = 1; j < width; j++) {
+        prev = input[0][j];
+        bool side = false;
+        for (int i = 1; i < width; i++) {            
+            if (input[i][j] != prev || input[i][j-1] == prev) {
+                if (side) {
+                    int h = hash(i-1, j);
+                    if (sides.find(h) == sides.end()) sides.insert({h, 0});
+                    sides[h]++;
+                    std::cout << "Added " << i-1 << ", " << j << " " << prev << std::endl;
+                }
+                prev = input[i][j];
+                side =false;
+            }
+            if (input[i][j-1] != input[i][j]) side = true;
+        }
+    }
+
+
+
+
+
+    int result = 0;
+    for (int i = 0; i < input.size(); i++) {
+        for (int j = 0; j < width; j++) {
+            if (seen.find(hash(i, j)) != seen.end()) continue;
+            params val = calculate(i, j);
+            std::cout << i << ", " << j << ": " << val.sides << " " << val.area <<std::endl;
+            result += val.area * val.perim;
+        }
+    }
 
     // std::cout << "Result (part 1): " << result << std::endl;
 }
