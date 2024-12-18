@@ -9,16 +9,15 @@
 
 int width = 71;
 int height = 71;
-int nfall = 1024;
 
-int part_1(std::vector<std::pair<int,int>> falling) {
+int solve(std::vector<std::pair<int,int>> falling, int nfall) {
     auto hash = [](std::pair<int,int> pos){ return pos.first + width * pos.second; };
     std::unordered_set<std::pair<int,int>, decltype(hash)> seen(10, hash);
     std::vector<std::pair<int,int>> positions;
     seen.insert({0, 0});
     positions.push_back({0, 0});
-
     for (int i = 0; i < nfall; i++) seen.insert(falling[i]);
+
     int nsteps = 0;
     while (!positions.empty()) {
         nsteps++;
@@ -39,11 +38,11 @@ int part_1(std::vector<std::pair<int,int>> falling) {
     return -1;
 }
 
-
 int main(int argc,  char** argv) {
     assert(argc == 2);
     std::ifstream file(argv[1]);
 
+    int nfall = 1024;
     if (strcmp(argv[1], "example.txt") == 0) {
         width = 7;
         height = 7;
@@ -60,5 +59,11 @@ int main(int argc,  char** argv) {
         falling.push_back(pos);
     }
 
-    std::cout << "Result (part 1): " << part_1(falling) << std::endl;
+    int steps = solve(falling, nfall);
+    std::cout << "Result (part 1): " << steps << std::endl;
+    while (steps != -1) {
+        steps = solve(falling, ++nfall);
+    }
+    std::pair<int,int> result = falling[nfall-1];
+    std::cout << "Result (part 2): " << result.first << "," << result.second << std::endl;
 }
