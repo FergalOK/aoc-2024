@@ -8,40 +8,48 @@
 #include <stack>
 #include <string.h>
 
+std::vector<std::string> towels;
+std::unordered_map<std::string, long long> seen;
+
+long solve(std::string design) {
+    if (design == "") return 1;
+    if (seen.find(design) != seen.end()) return seen[design];
+
+    long result = 0;
+    for (std::string t : towels) {
+        if (design.compare(0, t.size(), t) == 0) {
+            result += solve(design.substr(t.size()));
+        }
+    }
+    seen.insert({design, result});
+    return result;
+}
+
 int main(int argc,  char** argv) {
     assert(argc == 2);
     std::ifstream file(argv[1]);
 
     std::string line;
     std::getline(file, line);
-    std::vector<std::string> towels;
     int start = 0;
-    int comma = line.find(", ", start);
-    while (comma != -1) {
+    while (true) {
+        int comma = line.find(", ", start);
         towels.push_back(line.substr(start, comma-start));
+        if (comma == -1) break; // substr works because overflow ;)
         start = comma + 2;
-        comma = line.find(", ", start);
     }
 
     std::getline(file, line); assert(line == "");
 
-    int count = 0;
+    int part_1 = 0;
+    long part_2 = 0;
+    long count;
     for (std::string design; std::getline(file, design);) {
-        std::stack<std::string> substr;
-        substr.push(design);
-        while (!substr.empty()) {
-            std::string subdesign = substr.top(); substr.pop();
-            if (subdesign == "") {
-                count++;
-                break;
-            }
-            for (auto t : towels) {
-                if (subdesign.compare(0, t.size(), t) == 0) {
-                    substr.push(subdesign.substr(t.size()));
-                }
-            }
-        }
+        long result = solve(design);
+        part_1 += result != 0;
+        part_2 += result;
     }
 
-    std::cout << "Result (part 1): " << count << std::endl;
+    std::cout << "Result (part 1): " << part_1 << std::endl;
+    std::cout << "Result (part 2): " << part_2 << std::endl;
 }
