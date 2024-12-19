@@ -61,9 +61,15 @@ int main(int argc,  char** argv) {
 
     int steps = solve(falling, nfall);
     std::cout << "Result (part 1): " << steps << std::endl;
-    while (steps != -1) {
-        steps = solve(falling, ++nfall);
+
+    int left = nfall;
+    int right = falling.size()-1;
+    while (left < right) {
+        int pivot = left + (right - left) / 2;
+        steps = solve(falling, pivot);
+        if (steps != -1) left = pivot + 1;
+        else right = pivot;
     }
-    std::pair<int,int> result = falling[nfall-1];
+    std::pair<int,int> result = falling[right-1];
     std::cout << "Result (part 2): " << result.first << "," << result.second << std::endl;
 }
