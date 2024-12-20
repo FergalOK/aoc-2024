@@ -1,7 +1,12 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <cassert>
 #include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <stack>
+#include <string.h>
 
 struct pos_t { int x; int y; };
 bool operator==(const pos_t& lhs, const pos_t& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
@@ -34,18 +39,20 @@ int main(int argc,  char** argv) {
         }
     }
 
-    int count = 0;
+    int part_1 = 0;
+    int part_2 = 0;
     for (int i = 0; i < path.size(); i++) {
         auto pos0 = path[i];
         for (int j = i+3; j < path.size(); j++) {
             auto pos1 = path[j];
-            if (int dist = abs(path[i].x - path[j].x) + abs(path[i].y - path[j].y); dist == 2) {
+            if (int dist = abs(path[i].x - path[j].x) + abs(path[i].y - path[j].y); dist <= 20) {
                 int gain = (j - i) - dist;
-                if (gain >= 100) count++;
+                if (gain >= 100) part_2++;
+                if (gain >= 100 && dist == 2) part_1++;
             }
         }
     }
 
-    std::cout << count << std::endl;
-
+    std::cout << "Result (part 1): " << part_1 << std::endl;
+    std::cout << "Result (part 2): " << part_2 << std::endl;
 }
