@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cassert>
 #include <unordered_set>
+#include <set>
 #include <unordered_map>
 #include <regex>
 
@@ -46,4 +47,33 @@ int main(int argc,  char** argv) {
     }
 
     std::cout << "Result (part 1): " << result << std::endl;
+
+    std::set<std::string> max_clique; // Ordered alphabetically!
+    int max_size = 0;
+    for (auto it = computers.begin(); it != computers.end(); it++) {
+        std::set<std::string> clique;
+        clique.insert(it->first);
+        for (auto it1 = computers.begin(); it1 != computers.end(); it1++) {
+            bool in_clique = true;
+            for (auto vertex : clique) {
+                if (computers[vertex].find(it1->first) == computers[vertex].end()) {
+                    in_clique = false;
+                    break;
+                }
+            }
+            if (in_clique) clique.insert(it1->first);
+        }
+        if (clique.size() > max_size) {
+            max_clique = clique;
+            max_size = clique.size();
+        }
+    }
+
+    auto clique_it = max_clique.begin();
+    std::string a = *clique_it;
+    std::cout << "Result (part 2): " << *clique_it++;
+    for (clique_it; clique_it != max_clique.end(); clique_it++) {
+        std::cout << "," << *clique_it;
+    }
+    std::cout << std::endl;
 }
